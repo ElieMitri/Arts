@@ -20,7 +20,7 @@ export default function Create() {
   });
   const [email, setEmail] = useState("");
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState();
 
   function isValidEmail(email) {
     return /\S+@\S+\.\S+/.test(email);
