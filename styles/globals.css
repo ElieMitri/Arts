@@ -23,7 +23,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 95vh;
+  height: 100vh;
 }
 
 .login__inputs {
@@ -49,6 +49,7 @@ body {
   outline: none;
   color: rgb(0, 0, 0);
   font-size: 18px;
+  font-weight: bold;
 }
 
 .login__btn {
@@ -244,8 +245,8 @@ li {
   position: relative;
   display: flex;
   justify-content: center;
-  left: -180px;
-  left: 100px;
+  left: -160px;
+  top: -20px;
 }
 
 .percent {
@@ -270,15 +271,19 @@ li {
     position: relative;
     display: flex;
     justify-content: center;
-    left: -65px;
+    left: -55px;
+    top: -20px;
   }
   .login__wrapper {
     width: 340px;
-    height: 450px;
+    height: 500px;
   }
   .logout__button {
     width: 120px;
     height: 40px;
+  }
+  .container {
+    margin: 0;
   }
 }
 
