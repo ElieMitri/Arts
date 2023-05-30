@@ -1,52 +1,66 @@
 import Navbar from "./components/Navbar";
 import React, { useState, useEffect } from "react";
-import storage from "@/firebase";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { initializeApp } from "firebase/app";
+import {storage} from "@/firebase";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL, listAll } from "firebase/storage";
+import { getDocs } from "firebase/firestore";
 import Likes from "./components/Likes";
 
 // const app = initializeApp(firebaseConfig);
 
 export default function Home() {
-    const [selectedImages, setSelectedImages] = useState([]);
-    const [previewURLs, setPreviewURLs] = useState([]);
-    const [imageData, setImageData] = useState([]);
-    const [file, setFile] = useState("");
-    const [percent, setPercent] = useState(0);
+  const [likes, setLikes] = useState(0);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [previewURLs, setPreviewURLs] = useState([]);
+  const [imageData, setImageData] = useState([]);
+  const [file, setFile] = useState("");
+  const [percent, setPercent] = useState(0);
+  const storage = getStorage();
 
-  const handleImageUpload = (event) => {
+  const handleImageUpload = async (event) => {
     const files = Array.from(event.target.files);
     setSelectedImages((prevImages) => [...prevImages, ...files]);
 
     const imagePreviewURLs = files.map((file) => URL.createObjectURL(file));
     setPreviewURLs((prevURLs) => [...prevURLs, ...imagePreviewURLs]);
-    setFile(event.target.files[0]);
-    const storageRef = ref(storage, `/files/${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-    uploadTask.on(
-      "state_changed",
 
-      (err) => console.log(err),
-      () => {
-        // download url
-        getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-          console.log(url);
-        });
+    try {
+      for (const file of files) {
+        const storageRef = ref(storage, `/files/${file.name}`);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+        await uploadTask;
+
+        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+        console.log(downloadURL);
+        // Save the download URL to your database or perform any other actions
+
+        // Initialize the likes count for the uploaded photo to 0
+        setLikes((prevLikes) => ({
+          ...prevLikes,
+          [downloadURL]: 0
+        }));
       }
-    );
+    } catch (error) {
+      console.log("Error uploading image:", error);
+    }
+  };
+
+  const handleLike = (url) => {
+    setLikes((prevLikes) => ({
+      ...prevLikes,
+      [url]: prevLikes[url] + 1
+    }));
   };
 
   const fetchSavedPhotos = async () => {
-    const imagesRef = ref(storage, "/files");
-
     try {
-      const imagesSnapshot = await getDocs(imagesRef);
+      const imagesRef = ref(storage, "/files");
+      const imagesSnapshot = await listAll(imagesRef);
       const imageURLs = [];
 
-      imagesSnapshot.forEach((doc) => {
-        const imageURL = getDownloadURL(ref(storage, doc.name));
+      for (const imageRef of imagesSnapshot.items) {
+        const imageURL = await getDownloadURL(imageRef);
         imageURLs.push(imageURL);
-      });
+      }
 
       setPreviewURLs(imageURLs);
     } catch (error) {
@@ -71,7 +85,7 @@ export default function Home() {
         </div>
         <input type="file" id="upload" multiple onChange={handleImageUpload} />
         {previewURLs.map((url, index) => (
-          <div className="images__wrapper">
+          <div className="images__wrapper" key={index}>
             <div className="image">
               <img
                 key={index}
@@ -79,7 +93,7 @@ export default function Home() {
                 alt="Preview"
                 className="uploaded__image"
               />
-              <Likes percent={percent}/>
+              <Likes  count={likes[url]} onLike={() => handleLike(url)}/>
             </div>
           </div>
         ))}

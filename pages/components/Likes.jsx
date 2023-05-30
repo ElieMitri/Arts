@@ -1,19 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AiFillLike, AiOutlineLike } from "react-icons/ai";
 
-export default function Likes({ percent }) {
-    const [likes, setLikes] = useState(0);
-    const [clicked, setClicked] = useState(false);
+export default function Likes() {
+  const [likes, setLikes] = useState(0);
+  const [clicked, setClicked] = useState(false);
 
-    function likePost() {
-        setClicked(true);
-        setLikes(likes + 1);
-      }
-    
-      function unlikePost() {
-        setClicked(false);
-        setLikes(likes - 1);
-      }
+  function likePost() {
+    setClicked(true);
+    setLikes(likes + 1);
+  }
+
+  function unlikePost() {
+    setClicked(false);
+    setLikes(likes - 1);
+  }
+
   return (
     <div className="likes__wrapper">
       {clicked ? (
@@ -22,7 +23,6 @@ export default function Likes({ percent }) {
         <AiOutlineLike className="like__button" onClick={likePost} />
       )}
       <h1 className="number__of--likes">{likes} likes</h1>
-      {/* <p className="percent">{percent} "% done"</p> */}
     </div>
   );
 }
